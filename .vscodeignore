@@ -1,0 +1,8 @@
+.vscode/**
+src/**
+test-fixtures/**
+node_modules/**
+out/src/test/**
+out/**/*.map
+docs/**
+.claude/**

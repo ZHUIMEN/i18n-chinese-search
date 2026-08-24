@@ -1,0 +1,59 @@
+{
+  "name": "i18n-chinese-search",
+  "displayName": "i18n Chinese Search",
+  "publisher": "i18n-chinese-search",
+  "description": "通过中文一步定位 i18n key 在代码中的引用位置（vue-i18n 等）",
+  "version": "0.0.1",
+  "engines": { "vscode": "^1.75.0" },
+  "categories": ["Other"],
+  "activationEvents": [],
+  "main": "./out/src/extension.js",
+  "contributes": {
+    "commands": [
+      { "command": "i18nSearch.searchByChinese", "title": "通过中文搜索代码", "category": "i18n" },
+      { "command": "i18nSearch.searchByChineseInPanel", "title": "通过中文搜索代码（原生搜索面板）", "category": "i18n" }
+    ],
+    "configuration": {
+      "title": "i18n Chinese Search",
+      "properties": {
+        "i18nSearch.localePaths": {
+          "type": "array",
+          "items": { "type": "string" },
+          "default": [],
+          "description": "中文语言包路径 glob 数组，如 [\"src/locales/**/zh-CN.json\"]。也容忍逗号分隔的字符串。"
+        },
+        "i18nSearch.keyStyle": {
+          "type": "string",
+          "enum": ["auto", "nested", "flat"],
+          "default": "auto",
+          "description": "语言包 key 结构：nested 嵌套对象，flat 扁平点路径，auto 自动判断"
+        },
+        "i18nSearch.include": {
+          "type": "array",
+          "items": { "type": "string" },
+          "default": ["**/*.{vue,ts,js,tsx,jsx}"],
+          "description": "代码引用搜索的文件 glob 范围"
+        },
+        "i18nSearch.maxReferences": {
+          "type": "number",
+          "default": 200,
+          "description": "引用结果条数上限"
+        }
+      }
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -p ./ --watch",
+    "test": "npm run compile && node ./out/src/test/runTest.js"
+  },
+  "devDependencies": {
+    "@types/mocha": "^10.0.6",
+    "@types/node": "^18.19.0",
+    "@types/vscode": "^1.75.0",
+    "@vscode/test-electron": "^2.4.0",
+    "mocha": "^10.4.0",
+    "typescript": "^5.4.5"
+  }
+}
