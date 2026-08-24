@@ -1,0 +1,9 @@
+{
+  "user": {
+    "name": "用户名",
+    "profile": { "title": "个人中心" }
+  },
+  "login": { "usernamePlaceholder": "请输入用户名" },
+  "common": { "confirm": "确认", "cancel": "取消" },
+  "special.key": { "hello": "特殊键" }
+}
