@@ -1,4 +1,4 @@
 {
-  "i18nSearch.localePaths": ["locales/**/*.json"],
+  "i18nSearch.localeSearchPaths": ["locales/**/*.json"],
   "i18nSearch.include": ["**/*.vue", "**/*.ts"]
 }

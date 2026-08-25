@@ -65,7 +65,7 @@ vue-i18n 项目中代码文件只有 key（如 `$t('user.name')`），没有中�
 
 | 配置 | 类型 | 默认值 | 说明 |
 |:---|:---|:---|:---|
-| `i18nSearch.localePaths` | `string[]` | `[]` | 中文语言包 glob 数组，如 `["src/locales/**/zh-CN.json"]`；也容忍逗号分隔字符串 |
+| `i18nSearch.localeSearchPaths` | `string[]` | `[]` | 中文语言包 glob 数组，如 `["src/locales/**/zh-CN.json"]`；也容忍逗号分隔字符串 |
 | `i18nSearch.keyStyle` | `string` | `"auto"` | `nested` / `flat` / `auto` |
 | `i18nSearch.include` | `string[]` | `["**/*.{vue,ts,js,tsx,jsx}"]` | 代码引用搜索范围 |
 | `i18nSearch.maxReferences` | `number` | `200` | 引用结果上限 |
@@ -91,7 +91,7 @@ vue-i18n 项目中代码文件只有 key（如 `$t('user.name')`），没有中�
 
 | 场景 | 处理 |
 |:---|:---|
-| 无工作区 / `localePaths` 为空 | warning「请配置 i18nSearch.localePaths」+「打开设置」按钮 |
+| 无工作区 / `localeSearchPaths` 为空 | warning「请配置 i18nSearch.localeSearchPaths」+「打开设置」按钮 |
 | glob 匹配 0 个文件 | warning，展示配置值 |
 | JSON 解析失败 | warning 指明具体文件，跳过该文件继续加载其余 |
 | 中文无命中 | information「语言包中未找到包含 “xxx” 的文案」 |
@@ -121,7 +121,7 @@ i18n-chinese-search/
 
 **集成测试（`@vscode/test-electron`）**：fixture 工作区（嵌套 zh-CN.json + 含 `$t()` 的 vue/ts 文件）验证索引 -> 查询 -> 引用定位；坏 JSON 不拖垮整体加载。
 
-**手动验收**：两命令全流程；语言包热更新后能搜到新增文案；改 `localePaths` 配置无需重启（配置变更监听重建）。
+**手动验收**：两命令全流程；语言包热更新后能搜到新增文案；改 `localeSearchPaths` 配置无需重启（配置变更监听重建索引）。
 
 ## 10. 技术要点备忘
 

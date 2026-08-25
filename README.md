@@ -14,7 +14,7 @@ i18n Ally 等插件用编辑器 decoration 在 key 旁边「画」中文，但 d
 1. 配置中文语言包位置（支持多个 glob）：
 
    ```json
-   "i18nSearch.localePaths": ["src/locales/**/zh-CN.json"]
+   "i18nSearch.localeSearchPaths": ["src/locales/**/zh-CN.json"]
    ```
 
 2. 命令面板执行：
@@ -34,7 +34,7 @@ i18n Ally 等插件用编辑器 decoration 在 key 旁边「画」中文，但 d
 
 | 配置 | 类型 | 默认值 | 说明 |
 |:---|:---|:---|:---|
-| `i18nSearch.localePaths` | `string[]` | `[]` | 中文语言包 glob 数组 |
+| `i18nSearch.localeSearchPaths` | `string[]` | `[]` | 中文语言包 glob 数组 |
 | `i18nSearch.keyStyle` | `string` | `"auto"` | `nested` / `flat` / `auto` |
 | `i18nSearch.include` | `string[]` | `["**/*.{vue,ts,js,tsx,jsx}"]` | 代码引用搜索范围 |
 | `i18nSearch.maxReferences` | `number` | `200` | 引用结果上限 |

@@ -13,7 +13,7 @@ export function activate(context: vscode.ExtensionContext): void {
   const rebuild = debounce(() => void index.build(loadConfig()), 500);
   setupWatchers(context, rebuild);
 
-  // i18nSearch.* 配置变更 -> 失效索引并换新 watcher（改 localePaths 无需重启）
+  // i18nSearch.* 配置变更 -> 失效索引并换新 watcher（改 localeSearchPaths 无需重启）
   context.subscriptions.push(
     vscode.workspace.onDidChangeConfiguration(e => {
       if (!e.affectsConfiguration('i18nSearch')) {
@@ -31,7 +31,7 @@ export function activate(context: vscode.ExtensionContext): void {
 }
 
 function setupWatchers(context: vscode.ExtensionContext, rebuild: () => void): void {
-  for (const glob of loadConfig().localePaths) {
+  for (const glob of loadConfig().localeSearchPaths) {
     try {
       const watcher = vscode.workspace.createFileSystemWatcher(glob);
       watcher.onDidChange(rebuild);

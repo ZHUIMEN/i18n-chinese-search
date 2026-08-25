@@ -54,7 +54,7 @@ export class LocaleIndex {
 
   /** 首次使用或配置变化时构建；已在构建中则等待同一轮 */
   ensure(config: ExtensionConfig): Promise<BuildReport> {
-    const sig = JSON.stringify([config.localePaths, config.keyStyle]);
+    const sig = JSON.stringify([config.localeSearchPaths, config.keyStyle]);
     if (this.built && sig === this.configSig) {
       return this.building.then(() => this.report);
     }
@@ -69,7 +69,7 @@ export class LocaleIndex {
     });
     const report = await this.building;
     this.built = true;
-    this.configSig = JSON.stringify([config.localePaths, config.keyStyle]);
+    this.configSig = JSON.stringify([config.localeSearchPaths, config.keyStyle]);
     return report;
   }
 
@@ -78,7 +78,7 @@ export class LocaleIndex {
     const entries: IndexedEntry[] = [];
     let filesLoaded = 0;
 
-    for (const glob of config.localePaths) {
+    for (const glob of config.localeSearchPaths) {
       let uris: vscode.Uri[];
       try {
         uris = await vscode.workspace.findFiles(glob, '**/node_modules/**');

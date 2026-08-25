@@ -2,7 +2,7 @@ import * as vscode from 'vscode';
 import type { KeyStyle } from './locale/flatten';
 
 export interface ExtensionConfig {
-  localePaths: string[];
+  localeSearchPaths: string[];
   keyStyle: KeyStyle;
   include: string[];
   maxReferences: number;
@@ -28,7 +28,7 @@ export function loadConfig(): ExtensionConfig {
   const cfg = vscode.workspace.getConfiguration('i18nSearch');
   const keyStyle = cfg.get<KeyStyle>('keyStyle');
   return {
-    localePaths: normalizePaths(cfg.get('localePaths')),
+    localeSearchPaths: normalizePaths(cfg.get('localeSearchPaths')),
     keyStyle: keyStyle === 'nested' || keyStyle === 'flat' ? keyStyle : 'auto',
     include: normalizePaths(cfg.get('include')).length > 0
       ? normalizePaths(cfg.get('include'))

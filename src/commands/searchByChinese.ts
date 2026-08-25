@@ -16,19 +16,19 @@ export function registerCommands(context: vscode.ExtensionContext, index: Locale
   );
 }
 
-/** 工作区与 localePaths 前置检查（不通过时给出提示并返回 false） */
+/** 工作区与 localeSearchPaths 前置检查（不通过时给出提示并返回 false） */
 async function ensureWorkspaceAndConfig(config: ExtensionConfig): Promise<boolean> {
   if (vscode.workspace.workspaceFolders === undefined || vscode.workspace.workspaceFolders.length === 0) {
     void vscode.window.showWarningMessage('i18n Chinese Search 需要在工作区中使用');
     return false;
   }
-  if (config.localePaths.length === 0) {
+  if (config.localeSearchPaths.length === 0) {
     const pick = await vscode.window.showWarningMessage(
-      '请先配置 i18nSearch.localePaths（中文语言包 glob 数组，如 ["src/locales/**/zh-CN.json"]）',
+      '请先配置 i18nSearch.localeSearchPaths（中文语言包 glob 数组，如 ["src/locales/**/zh-CN.json"]）',
       '打开设置',
     );
     if (pick === '打开设置') {
-      void vscode.commands.executeCommand('workbench.action.openSettings', 'i18nSearch.localePaths');
+      void vscode.commands.executeCommand('workbench.action.openSettings', 'i18nSearch.localeSearchPaths');
     }
     return false;
   }
@@ -47,7 +47,7 @@ async function ensureIndex(config: ExtensionConfig, index: LocaleIndex): Promise
   }
   if (report.filesLoaded === 0) {
     void vscode.window.showWarningMessage(
-      `localePaths 未匹配到任何可加载的语言包文件：${config.localePaths.join(', ')}`,
+      `localeSearchPaths 未匹配到任何可加载的语言包文件：${config.localeSearchPaths.join(', ')}`,
     );
     return undefined;
   }

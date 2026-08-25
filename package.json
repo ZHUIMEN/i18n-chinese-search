@@ -29,7 +29,7 @@
     "configuration": {
       "title": "i18n Chinese Search",
       "properties": {
-        "i18nSearch.localePaths": {
+        "i18nSearch.localeSearchPaths": {
           "type": "array",
           "items": { "type": "string" },
           "default": [],
