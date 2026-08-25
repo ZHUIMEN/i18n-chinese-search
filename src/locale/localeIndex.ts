@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import { LocaleEntry, KeyStyle, flattenLocale } from './flatten';
+import { LocaleEntry, flattenLocale } from './flatten';
 import { getParserForFile } from './parser';
 import { ExtensionConfig } from '../config';
 

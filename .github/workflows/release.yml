@@ -1,0 +1,64 @@
+name: Release
+
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+
+permissions:
+  contents: write # softprops/action-gh-release 上传 .vsix 到 GitHub Release
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      # tag 必须与 package.json 版本一致，防止发布出去的版本号与 tag 对不上
+      - name: Verify tag matches package.json version
+        if: startsWith(github.ref, 'refs/tags/')
+        run: |
+          PKG_VERSION="v$(node -p "require('./package.json').version")"
+          if [ "$PKG_VERSION" != "$GITHUB_REF_NAME" ]; then
+            echo "::error::Tag $GITHUB_REF_NAME 与 package.json 版本（$PKG_VERSION）不一致，请先 bump version 再打 tag"
+            exit 1
+          fi
+
+      - run: npm ci
+      - run: npm run compile
+
+      # 发布前同样跑全量测试：发出去的包必须是被测试过的提交
+      - run: xvfb-run -a npm test
+
+      # 第一次调用让 action 自己 vsce package，产出 vsixPath 给后续步骤复用（双市场 + Release 附件是同一个包）
+      - name: Publish to Open VSX
+        id: ovsx
+        uses: HaaLeo/publish-vscode-extension@v2
+        with:
+          pat: ${{ secrets.OVSX_TOKEN }}
+          registryUrl: https://open-vsx.org
+
+      - name: Publish to VS Marketplace
+        uses: HaaLeo/publish-vscode-extension@v2
+        with:
+          pat: ${{ secrets.VSCE_PAT }}
+          registryUrl: https://marketplace.visualstudio.com
+          extensionFile: ${{ steps.ovsx.outputs.vsixPath }}
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: vsix
+          path: ${{ steps.ovsx.outputs.vsixPath }}
+
+      # workflow_dispatch 没有 tag 上下文，只有 tag 推送才建 GitHub Release
+      - name: Attach vsix to GitHub Release
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: ${{ steps.ovsx.outputs.vsixPath }}
+          generate_release_notes: true

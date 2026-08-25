@@ -6,3 +6,6 @@ out/src/test/**
 out/**/*.map
 docs/**
 .claude/**
+.github/**
+.vscode-test/**
+eslint.config.js

@@ -1,0 +1,41 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      # 缓存 @vscode/test-electron 下载的独立 VS Code（约 300MB，key 按 sha 演进，restore-keys 兜底复用旧版）
+      - name: Cache VS Code test instance
+        uses: actions/cache@v4
+        with:
+          path: .vscode-test
+          key: vscode-test-${{ runner.os }}-${{ github.sha }}
+          restore-keys: vscode-test-${{ runner.os }}-
+
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run compile
+
+      # Extension Host 测试需要 X11，无头环境用 xvfb-run 包一层
+      - run: xvfb-run -a npm test
+
+      - name: Package vsix
+        run: npx @vscode/vsce package
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: vsix
+          path: '*.vsix'
