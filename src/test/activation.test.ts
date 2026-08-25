@@ -9,5 +9,6 @@ suite('extension activation', () => {
     const cmds = await vscode.commands.getCommands(true);
     assert.ok(cmds.includes('i18nSearch.searchByChinese'));
     assert.ok(cmds.includes('i18nSearch.searchByChineseInPanel'));
+    assert.ok(cmds.includes('i18nSearch.quickSearchInPanel'));
   });
 });

@@ -21,7 +21,10 @@ i18n Ally 等插件用编辑器 decoration 在 key 旁边「画」中文，但 d
    - **i18n: 通过中文搜索代码** -- 输入中文子串 -> 选语言包条目 -> 选引用位置回车跳转；
    - **i18n: 通过中文搜索代码（原生搜索面板）** -- 同流程，最后打开 VS Code 原生搜索面板（正则已填好）。
 
-3. 建议快捷键（keybindings.json）：
+3. **Search 面板直搜按钮**：原生搜索面板（Ctrl+Shift+F）标题栏有一个 🌐 按钮，
+   点击后输入中文，命中的所有 key 自动合并为一个正则，直接打开原生搜索结果（无二次选择）。
+
+4. 建议快捷键（keybindings.json）：
 
    ```json
    { "key": "ctrl+alt+t", "command": "i18nSearch.searchByChinese" }

@@ -16,6 +16,15 @@ export function buildKeySearchPattern(key: string): string {
   return `['"\`]${escapeRegex(key)}['"\`]`;
 }
 
+/** 多个 key 合并为一个带引号的匹配模式（去重；单元素退化为单 key 模式）。要求 keys 非空。 */
+export function buildKeysSearchPattern(keys: string[]): string {
+  const uniq = [...new Set(keys)];
+  if (uniq.length === 1) {
+    return buildKeySearchPattern(uniq[0]);
+  }
+  return `['"\`](${uniq.map(escapeRegex).join('|')})['"\`]`;
+}
+
 export function includePattern(include: string[]): string {
   return include.length === 1 ? include[0] : `{${include.join(',')}}`;
 }

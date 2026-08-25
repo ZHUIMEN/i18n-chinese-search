@@ -11,8 +11,21 @@
   "contributes": {
     "commands": [
       { "command": "i18nSearch.searchByChinese", "title": "通过中文搜索代码", "category": "i18n" },
-      { "command": "i18nSearch.searchByChineseInPanel", "title": "通过中文搜索代码（原生搜索面板）", "category": "i18n" }
+      { "command": "i18nSearch.searchByChineseInPanel", "title": "通过中文搜索代码（原生搜索面板）", "category": "i18n" },
+      { "command": "i18nSearch.quickSearchInPanel", "title": "通过中文搜索（面板直搜）", "category": "i18n", "icon": "$(globe)" }
     ],
+    "menus": {
+      "view/title": [
+        {
+          "command": "i18nSearch.quickSearchInPanel",
+          "when": "view == workbench.view.search",
+          "group": "navigation"
+        }
+      ],
+      "commandPalette": [
+        { "command": "i18nSearch.quickSearchInPanel", "when": "false" }
+      ]
+    },
     "configuration": {
       "title": "i18n Chinese Search",
       "properties": {

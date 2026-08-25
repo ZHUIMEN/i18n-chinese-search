@@ -1,21 +1,26 @@
 import * as vscode from 'vscode';
-import { LocaleIndex, IndexedEntry, matchEntries } from '../locale/localeIndex';
-import { loadConfig } from '../config';
-import { KeyReference, buildKeySearchPattern, findKeyReferences } from '../search/referenceFinder';
+import { LocaleIndex, IndexedEntry, matchEntries, BuildReport } from '../locale/localeIndex';
+import { ExtensionConfig, loadConfig } from '../config';
+import {
+  KeyReference,
+  buildKeySearchPattern,
+  buildKeysSearchPattern,
+  findKeyReferences,
+} from '../search/referenceFinder';
 
 export function registerCommands(context: vscode.ExtensionContext, index: LocaleIndex): void {
   context.subscriptions.push(
     vscode.commands.registerCommand('i18nSearch.searchByChinese', () => runSearch(index, false)),
     vscode.commands.registerCommand('i18nSearch.searchByChineseInPanel', () => runSearch(index, true)),
+    vscode.commands.registerCommand('i18nSearch.quickSearchInPanel', () => runQuickPanelSearch(index)),
   );
 }
 
-async function runSearch(index: LocaleIndex, usePanel: boolean): Promise<void> {
-  const config = loadConfig();
-
+/** 工作区与 localePaths 前置检查（不通过时给出提示并返回 false） */
+async function ensureWorkspaceAndConfig(config: ExtensionConfig): Promise<boolean> {
   if (vscode.workspace.workspaceFolders === undefined || vscode.workspace.workspaceFolders.length === 0) {
     void vscode.window.showWarningMessage('i18n Chinese Search 需要在工作区中使用');
-    return;
+    return false;
   }
   if (config.localePaths.length === 0) {
     const pick = await vscode.window.showWarningMessage(
@@ -25,9 +30,13 @@ async function runSearch(index: LocaleIndex, usePanel: boolean): Promise<void> {
     if (pick === '打开设置') {
       void vscode.commands.executeCommand('workbench.action.openSettings', 'i18nSearch.localePaths');
     }
-    return;
+    return false;
   }
+  return true;
+}
 
+/** 构建索引（带进度提示）；无可加载文件时提示并返回 undefined */
+async function ensureIndex(config: ExtensionConfig, index: LocaleIndex): Promise<BuildReport | undefined> {
   // 首次构建/配置变更后重建时给出可见反馈（大语言包目录解析需要时间）
   const report = await vscode.window.withProgress(
     { location: vscode.ProgressLocation.Notification, title: 'i18n: 正在加载语言包索引' },
@@ -40,6 +49,18 @@ async function runSearch(index: LocaleIndex, usePanel: boolean): Promise<void> {
     void vscode.window.showWarningMessage(
       `localePaths 未匹配到任何可加载的语言包文件：${config.localePaths.join(', ')}`,
     );
+    return undefined;
+  }
+  return report;
+}
+
+async function runSearch(index: LocaleIndex, usePanel: boolean): Promise<void> {
+  const config = loadConfig();
+  if (!(await ensureWorkspaceAndConfig(config))) {
+    return;
+  }
+  const report = await ensureIndex(config, index);
+  if (report === undefined) {
     return;
   }
 
@@ -75,6 +96,41 @@ async function runSearch(index: LocaleIndex, usePanel: boolean): Promise<void> {
     return;
   }
   await pickReference(refs, config.maxReferences, entry.key);
+}
+
+// ---------- Search 面板顶部按钮：输入中文 -> 合并所有命中 key -> 直接打开原生搜索 ----------
+
+async function runQuickPanelSearch(index: LocaleIndex): Promise<void> {
+  const config = loadConfig();
+  if (!(await ensureWorkspaceAndConfig(config))) {
+    return;
+  }
+
+  const input = await vscode.window.showInputBox({
+    placeHolder: '输入要搜索的中文，如：用户名',
+    prompt: '命中的所有 key 将合并为一个正则，直接在搜索面板中打开',
+  });
+  if (input === undefined || input.trim() === '') {
+    return;
+  }
+
+  const report = await ensureIndex(config, index);
+  if (report === undefined) {
+    return;
+  }
+
+  const hits = index.search(input);
+  if (hits.length === 0) {
+    void vscode.window.showInformationMessage(`语言包中未找到包含 "${input.trim()}" 的文案`);
+    return;
+  }
+
+  await vscode.commands.executeCommand('workbench.action.findInFiles', {
+    query: buildKeysSearchPattern(hits.map(h => h.key)),
+    isRegex: true,
+    triggerSearch: true,
+    matchCase: true,
+  });
 }
 
 // ---------- QuickPick ①：选语言包条目 ----------

@@ -1,5 +1,10 @@
 import * as assert from 'assert';
-import { escapeRegex, buildKeySearchPattern, includePattern } from '../search/referenceFinder';
+import {
+  escapeRegex,
+  buildKeySearchPattern,
+  buildKeysSearchPattern,
+  includePattern,
+} from '../search/referenceFinder';
 
 suite('regex helpers', () => {
   test('转义正则特殊字符', () => {
@@ -9,6 +14,21 @@ suite('regex helpers', () => {
 
   test('生成带引号的 key 匹配模式', () => {
     assert.strictEqual(buildKeySearchPattern('user.name'), "['\"`]user\\.name['\"`]");
+  });
+
+  test('多 key 合并模式：去重、转义、单元素退化为单 key 模式', () => {
+    assert.strictEqual(buildKeysSearchPattern(['user.name']), "['\"`]user\\.name['\"`]");
+    assert.strictEqual(
+      buildKeysSearchPattern(['user.name', 'login.name', 'user.name']),
+      "['\"`](user\\.name|login\\.name)['\"`]",
+    );
+  });
+
+  test('多 key 合并模式命中任一 key', () => {
+    const re = new RegExp(buildKeysSearchPattern(['user.name', 'common.confirm']));
+    assert.ok(re.test(`$t('user.name')`));
+    assert.ok(re.test('t("common.confirm")'));
+    assert.ok(!re.test("t('common.cancel')"));
   });
 
   test('模式命中三种引号与多种调用形态', () => {
