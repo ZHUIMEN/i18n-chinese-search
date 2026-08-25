@@ -9,6 +9,10 @@ i18n Ally 等插件用编辑器 decoration 在 key 旁边「画」中文，但 d
 不进入文档模型，VS Code 搜索架构上索引不到。本插件绕开这一限制：输入中文 -> 反查语言包 key ->
 全局搜索带引号的 key 引用 -> 直接跳转。
 
+<p align="center" >
+   <img src="https://raw.githubusercontent.com/ZHUIMEN/i18n-chinese-search/main/public/demo.gif" width="1000" alt="demo gif" />
+</p>
+
 ## 使用
 
 1. 配置中文语言包位置（支持多个 glob）：
@@ -46,45 +50,3 @@ i18n Ally 等插件用编辑器 decoration 在 key 旁边「画」中文，但 d
   因此大仓库首次查询可能略慢。
 - 动态拼接的 key（如 `` $t(`user.${type}`) ``）无法命中：引用搜索只匹配带引号的完整字面量 key。
 
-## 开发
-
-```bash
-npm install
-npm run lint      # eslint
-npm run compile   # 编译
-npm test          # 单元 + 集成测试（首次会下载独立 VS Code）
-npx vsce package  # 打包 .vsix
-```
-
-F5 启动 Extension Development Host 手动验证。`test-fixtures/` 是自动化测试用的工作区。
-
-## CI 与发布（GitHub Actions）
-
-两条流水线分离：
-
-| 工作流 | 触发 | 作用 |
-|:---|:---|:---|
-| `.github/workflows/ci.yml` | push / PR 到 main | lint、编译、测试（xvfb 无头）、打包 .vsix 上传 artifact（不发布） |
-| `.github/workflows/release.yml` | 推送 `v*` tag / 手动 dispatch | 同一套构建 + 测试，发布到 Open VSX 与 VS Marketplace，并把 .vsix 挂到 GitHub Release |
-
-发版步骤：
-
-```bash
-# 1. bump package.json 的 version（tag 校验要求两者一致，如 v0.0.1 == version "0.0.1"）
-# 2. 提交后打 tag 推送，release 流水线自动完成双市场发布 + GitHub Release
-git tag v0.0.1 && git push origin main --tags
-```
-
-需要在仓库 Settings -> Secrets and variables -> Actions 配置：
-
-| Secret | 用途 | 获取方式 |
-|:---|:---|:---|
-| `VSCE_PAT` | VS Code Marketplace 发布 | marketplace.visualstudio.com -> Publisher 管理 -> Create PAT（Marketplace 范围） |
-| `OVSX_TOKEN` | Open VSX 发布 | open-vsx.org -> User Settings -> Access Tokens |
-
-注意事项：
-
-- 发布前必须先在两个市场创建与 `package.json` 的 `publisher`（`i18n-ally-search`）同名的发布者账号；
-- `workflow_dispatch` 手动触发只发市场不建 GitHub Release（无 tag 上下文），且未 bump 版本会被市场拒绝；
-- Azure DevOps PAT 将于 2026 年 12 月退役，届时 Marketplace 发布需迁移到 Entra ID 工作负载身份（`--azure-credential`），GitHub Actions + PAT 方案在此之前有效；
-- GitHub Releases 上的 `.vsix` 可供用户手动安装（`Extensions: Install from VSIX…`）。

@@ -3,13 +3,19 @@
   "displayName": "i18n Chinese Search",
   "publisher": "i18n-ally-search",
   "description": "通过中文一步定位 i18n key 在代码中的引用位置（vue-i18n 等）",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "engines": {
     "vscode": "^1.75.0"
   },
   "categories": [
     "Other"
   ],
+  "author": "cuijajun <cj@cuijiajun.top>",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ZHUIMEN/i18n-chinese-search"
+  },
+  "icon": "public/i18n-ally-search.png",
   "activationEvents": [],
   "main": "./out/src/extension.js",
   "contributes": {
