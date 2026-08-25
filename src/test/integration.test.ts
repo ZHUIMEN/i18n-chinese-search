@@ -1,4 +1,5 @@
 import * as assert from 'assert';
+import * as vscode from 'vscode';
 import { LocaleIndex } from '../locale/localeIndex';
 import { loadConfig } from '../config';
 import { findKeyReferences } from '../search/referenceFinder';
@@ -45,7 +46,8 @@ suite('integration: 代码引用搜索（fixture 工作区）', () => {
     assert.strictEqual(refs.length, 1);
     assert.ok(refs[0].uri.fsPath.replace(/\\/g, '/').endsWith('test-fixtures/src/demo.vue'));
     assert.strictEqual(refs[0].range.start.line, 1); // <div>{{ $t('user.name') }}</div>
-    assert.ok(refs[0].lineText.includes("$t('user.name')"));
+    // 只断言 key 与行号命中，不断言引号风格（格式化工具可能改写引号）
+    assert.ok(refs[0].lineText.includes('user.name'));
   });
 
   test('ts 文件双引号引用也能定位', async () => {
@@ -57,5 +59,30 @@ suite('integration: 代码引用搜索（fixture 工作区）', () => {
   test('无引用返回空数组', async () => {
     const refs = await findKeyReferences('not.used.key', ['**/*.vue', '**/*.ts'], 200);
     assert.deepStrictEqual(refs, []);
+  });
+
+  test('扫描进度回调被调用且最终值与总数一致', async () => {
+    const seen: { scanned: number; total: number }[] = [];
+    const refs = await findKeyReferences(
+      'user.name',
+      ['**/*.vue', '**/*.ts'],
+      200,
+      p => seen.push({ ...p }),
+    );
+    assert.ok(refs.length > 0);
+    // 退化扫描路径会回报进度（若运行环境有 findTextInFiles API 则可能为空，此时跳过校验）
+    if (seen.length > 0) {
+      const last = seen[seen.length - 1];
+      assert.strictEqual(last.scanned, last.total);
+      assert.ok(last.total >= 2);
+    }
+  });
+
+  test('取消令牌提前生效时返回部分结果且不抛错', async () => {
+    const cts = new vscode.CancellationTokenSource();
+    cts.cancel();
+    const refs = await findKeyReferences('user.name', ['**/*.vue', '**/*.ts'], 200, undefined, cts.token);
+    assert.deepStrictEqual(refs, []);
+    cts.dispose();
   });
 });

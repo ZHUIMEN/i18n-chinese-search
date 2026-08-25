@@ -39,7 +39,19 @@ function getFindTextInFiles(): FindTextInFilesApi | undefined {
   return typeof candidate === 'function' ? (candidate as FindTextInFilesApi) : undefined;
 }
 
-export async function findKeyReferences(key: string, include: string[], maxResults: number): Promise<KeyReference[]> {
+/** 扫描进度（当前仅退化扫描路径会真实回报） */
+export interface FindProgress {
+  scanned: number;
+  total: number;
+}
+
+export async function findKeyReferences(
+  key: string,
+  include: string[],
+  maxResults: number,
+  onProgress?: (p: FindProgress) => void,
+  token?: vscode.CancellationToken,
+): Promise<KeyReference[]> {
   // 优先用官方 API（内置 ripgrep，尊重 search.exclude）；
   // API 不存在（老版本 VS Code）或抛错时退化为逐文件扫描。
   const findTextInFiles = getFindTextInFiles();
@@ -50,7 +62,7 @@ export async function findKeyReferences(key: string, include: string[], maxResul
       // fallthrough
     }
   }
-  return findByFileScan(key, include, maxResults);
+  return findByFileScan(key, include, maxResults, onProgress, token);
 }
 
 async function findByApi(
@@ -74,25 +86,53 @@ async function findByApi(
   return out;
 }
 
-async function findByFileScan(key: string, include: string[], maxResults: number): Promise<KeyReference[]> {
+/** 单文件扫描结果为空的体积上限：跳过压缩产物等大文件，避免拖慢全量扫描 */
+const MAX_FILE_BYTES = 2 * 1024 * 1024;
+
+/** 退化扫描的并发批大小 */
+const SCAN_CHUNK = 32;
+
+async function findByFileScan(
+  key: string,
+  include: string[],
+  maxResults: number,
+  onProgress?: (p: FindProgress) => void,
+  token?: vscode.CancellationToken,
+): Promise<KeyReference[]> {
   const regex = new RegExp(buildKeySearchPattern(key));
   const uris = await vscode.workspace.findFiles(includePattern(include), '**/node_modules/**');
   const out: KeyReference[] = [];
-  for (const uri of uris) {
-    if (out.length >= maxResults) {
+  for (let i = 0; i < uris.length; i += SCAN_CHUNK) {
+    if (token?.isCancellationRequested) {
       break;
     }
-    const raw = await vscode.workspace.fs.readFile(uri);
-    const lines = new TextDecoder('utf-8').decode(raw).split(/\r?\n/);
-    for (let i = 0; i < lines.length; i++) {
-      const m = regex.exec(lines[i]);
-      if (m) {
-        out.push({ uri, range: new vscode.Range(i, m.index, i, m.index + m[0].length), lineText: lines[i] });
+    const chunk = uris.slice(i, i + SCAN_CHUNK);
+    const hitsPerFile = await Promise.all(chunk.map(uri => scanFile(uri, regex)));
+    outer: for (const hits of hitsPerFile) {
+      for (const hit of hits) {
         if (out.length >= maxResults) {
-          break;
+          break outer;
         }
+        out.push(hit);
       }
     }
+    onProgress?.({ scanned: Math.min(i + SCAN_CHUNK, uris.length), total: uris.length });
   }
   return out;
+}
+
+async function scanFile(uri: vscode.Uri, regex: RegExp): Promise<KeyReference[]> {
+  const raw = await vscode.workspace.fs.readFile(uri);
+  if (raw.byteLength > MAX_FILE_BYTES) {
+    return [];
+  }
+  const lines = new TextDecoder('utf-8').decode(raw).split(/\r?\n/);
+  const hits: KeyReference[] = [];
+  for (let i = 0; i < lines.length; i++) {
+    const m = regex.exec(lines[i]);
+    if (m) {
+      hits.push({ uri, range: new vscode.Range(i, m.index, i, m.index + m[0].length), lineText: lines[i] });
+    }
+  }
+  return hits;
 }

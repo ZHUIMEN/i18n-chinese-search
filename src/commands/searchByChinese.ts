@@ -28,7 +28,11 @@ async function runSearch(index: LocaleIndex, usePanel: boolean): Promise<void> {
     return;
   }
 
-  const report = await index.ensure(config);
+  // 首次构建/配置变更后重建时给出可见反馈（大语言包目录解析需要时间）
+  const report = await vscode.window.withProgress(
+    { location: vscode.ProgressLocation.Notification, title: 'i18n: 正在加载语言包索引' },
+    () => index.ensure(config),
+  );
   for (const failure of report.failures) {
     void vscode.window.showWarningMessage(`语言包加载失败：${failure.file}（${failure.message}）`);
   }
@@ -50,8 +54,21 @@ async function runSearch(index: LocaleIndex, usePanel: boolean): Promise<void> {
   }
 
   const refs = await vscode.window.withProgress(
-    { location: vscode.ProgressLocation.Window, title: `i18n: 搜索 "${entry.key}" 的引用` },
-    () => findKeyReferences(entry.key, config.include, config.maxReferences),
+    {
+      location: vscode.ProgressLocation.Notification,
+      title: `i18n: 搜索 "${entry.key}" 的引用`,
+      cancellable: true,
+    },
+    (progress, token) =>
+      findKeyReferences(
+        entry.key,
+        config.include,
+        config.maxReferences,
+        ({ scanned, total }) => {
+          progress.report({ message: `已扫描 ${scanned}/${total} 个文件` });
+        },
+        token,
+      ),
   );
   if (refs.length === 0) {
     void vscode.window.showInformationMessage(`key "${entry.key}" 在代码中无引用`);

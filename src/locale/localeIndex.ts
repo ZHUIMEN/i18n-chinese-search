@@ -86,26 +86,39 @@ export class LocaleIndex {
         failures.push({ file: glob, message: `无效的 glob：${err instanceof Error ? err.message : String(err)}` });
         continue;
       }
-      for (const uri of uris) {
+      // 并发读取+解析（单文件坏掉只记失败，不拖垮整体索引）
+      const results = await Promise.all(uris.map(async uri => {
         const parser = getParserForFile(uri.fsPath);
         if (!parser) {
-          failures.push({ file: vscode.workspace.asRelativePath(uri), message: '不支持的文件格式' });
-          continue;
+          return { ok: false as const, failure: { file: vscode.workspace.asRelativePath(uri), message: '不支持的文件格式' } };
         }
         try {
           const raw = await vscode.workspace.fs.readFile(uri);
           const text = new TextDecoder('utf-8').decode(raw);
           const obj = await parser.parse(text);
-          for (const e of flattenLocale(obj, config.keyStyle)) {
-            entries.push({ ...e, filePath: vscode.workspace.asRelativePath(uri) });
-          }
-          filesLoaded++;
+          return {
+            ok: true as const,
+            entries: flattenLocale(obj, config.keyStyle).map(e => ({
+              ...e,
+              filePath: vscode.workspace.asRelativePath(uri),
+            })),
+          };
         } catch (err) {
-          // 单个文件坏掉不拖垮整体索引
-          failures.push({
-            file: vscode.workspace.asRelativePath(uri),
-            message: err instanceof Error ? err.message : String(err),
-          });
+          return {
+            ok: false as const,
+            failure: {
+              file: vscode.workspace.asRelativePath(uri),
+              message: err instanceof Error ? err.message : String(err),
+            },
+          };
+        }
+      }));
+      for (const r of results) {
+        if (!r.ok) {
+          failures.push(r.failure);
+        } else {
+          entries.push(...r.entries);
+          filesLoaded++;
         }
       }
     }
