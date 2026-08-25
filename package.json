@@ -1,18 +1,35 @@
 {
-  "name": "i18n-chinese-search",
+  "name": "i18n-ally-search",
   "displayName": "i18n Chinese Search",
-  "publisher": "i18n-chinese-search",
+  "publisher": "i18n-ally-search",
   "description": "通过中文一步定位 i18n key 在代码中的引用位置（vue-i18n 等）",
   "version": "0.0.1",
-  "engines": { "vscode": "^1.75.0" },
-  "categories": ["Other"],
+  "engines": {
+    "vscode": "^1.75.0"
+  },
+  "categories": [
+    "Other"
+  ],
   "activationEvents": [],
   "main": "./out/src/extension.js",
   "contributes": {
     "commands": [
-      { "command": "i18nSearch.searchByChinese", "title": "通过中文搜索代码", "category": "i18n" },
-      { "command": "i18nSearch.searchByChineseInPanel", "title": "通过中文搜索代码（原生搜索面板）", "category": "i18n" },
-      { "command": "i18nSearch.quickSearchInPanel", "title": "通过中文搜索（面板直搜）", "category": "i18n", "icon": "$(globe)" }
+      {
+        "command": "i18nSearch.searchByChinese",
+        "title": "通过中文搜索代码",
+        "category": "i18n"
+      },
+      {
+        "command": "i18nSearch.searchByChineseInPanel",
+        "title": "通过中文搜索代码（原生搜索面板）",
+        "category": "i18n"
+      },
+      {
+        "command": "i18nSearch.quickSearchInPanel",
+        "title": "通过中文搜索（面板直搜）",
+        "category": "i18n",
+        "icon": "$(globe)"
+      }
     ],
     "menus": {
       "view/title": [
@@ -23,7 +40,10 @@
         }
       ],
       "commandPalette": [
-        { "command": "i18nSearch.quickSearchInPanel", "when": "false" }
+        {
+          "command": "i18nSearch.quickSearchInPanel",
+          "when": "false"
+        }
       ]
     },
     "configuration": {
@@ -31,20 +51,30 @@
       "properties": {
         "i18nSearch.localeSearchPaths": {
           "type": "array",
-          "items": { "type": "string" },
+          "items": {
+            "type": "string"
+          },
           "default": [],
           "description": "中文语言包路径 glob 数组，如 [\"src/locales/**/zh-CN.json\"]。也容忍逗号分隔的字符串。"
         },
         "i18nSearch.keyStyle": {
           "type": "string",
-          "enum": ["auto", "nested", "flat"],
+          "enum": [
+            "auto",
+            "nested",
+            "flat"
+          ],
           "default": "auto",
           "description": "语言包 key 结构：nested 嵌套对象，flat 扁平点路径，auto 自动判断"
         },
         "i18nSearch.include": {
           "type": "array",
-          "items": { "type": "string" },
-          "default": ["**/*.{vue,ts,js,tsx,jsx}"],
+          "items": {
+            "type": "string"
+          },
+          "default": [
+            "**/*.{vue,ts,js,tsx,jsx}"
+          ],
           "description": "代码引用搜索的文件 glob 范围"
         },
         "i18nSearch.maxReferences": {

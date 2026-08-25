@@ -1,4 +1,4 @@
-# i18n-chinese-search 插件设计文档
+# i18n-ally-search 插件设计文档
 
 日期：2026-08-24
 状态：已与用户确认的设计
@@ -102,7 +102,7 @@ vue-i18n 项目中代码文件只有 key（如 `$t('user.name')`），没有中�
 ## 8. 项目结构与实现顺序
 
 ```
-i18n-chinese-search/
+i18n-ally-search/
 ├── package.json / tsconfig.json / esbuild.js
 ├── src/
 │   ├── extension.ts

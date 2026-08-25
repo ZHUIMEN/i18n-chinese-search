@@ -1,10 +1,10 @@
-# i18n-chinese-search 实现计划
+# i18n-ally-search 实现计划
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** 一个零运行时依赖的 VS Code 插件：输入中文子串 -> 反查语言包 key -> 全局定位代码中该 key 的引用，支持 QuickPick 跳转与转接原生搜索面板两种交互。
 
-**Architecture:** 语言包反向索引（懒加载 + FileSystemWatcher 防抖重建）+ 按需 `vscode.workspace.findTextInFiles`（内置 ripgrep）搜带引号的 key。解析器接口可插拔（MVP 只有 JSON）。规格见 `docs/superpowers/specs/2026-08-24-i18n-chinese-search-design.md`。
+**Architecture:** 语言包反向索引（懒加载 + FileSystemWatcher 防抖重建）+ 按需 `vscode.workspace.findTextInFiles`（内置 ripgrep）搜带引号的 key。解析器接口可插拔（MVP 只有 JSON）。规格见 `docs/superpowers/specs/2026-08-24-i18n-ally-search-design.md`。
 
 **Tech Stack:** TypeScript、VS Code Extension API（engines ^1.75）、mocha + @vscode/test-electron（测试跑在真实 VS Code 扩展宿主里）、tsc 直出（零运行时依赖，不需要 esbuild 打包）。
 
@@ -32,9 +32,9 @@
 
 ```json
 {
-  "name": "i18n-chinese-search",
+  "name": "i18n-ally-search",
   "displayName": "i18n Chinese Search",
-  "publisher": "i18n-chinese-search",
+  "publisher": "i18n-ally-search",
   "description": "通过中文一步定位 i18n key 在代码中的引用位置（vue-i18n 等）",
   "version": "0.0.1",
   "engines": { "vscode": "^1.75.0" },
@@ -1250,8 +1250,8 @@ import * as vscode from 'vscode';
 
 suite('extension activation', () => {
   test('两个命令均已注册', async () => {
-    const ext = vscode.extensions.getExtension('i18n-chinese-search.i18n-chinese-search');
-    assert.ok(ext, '扩展未加载，检查 publisher/name 是否为 i18n-chinese-search');
+    const ext = vscode.extensions.getExtension('i18n-ally-search.i18n-ally-search');
+    assert.ok(ext, '扩展未加载，检查 publisher/name 是否为 i18n-ally-search');
     await ext.activate();
     const cmds = await vscode.commands.getCommands(true);
     assert.ok(cmds.includes('i18nSearch.searchByChinese'));

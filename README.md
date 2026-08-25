@@ -84,7 +84,7 @@ git tag v0.0.1 && git push origin main --tags
 
 注意事项：
 
-- 发布前必须先在两个市场创建与 `package.json` 的 `publisher`（`i18n-chinese-search`）同名的发布者账号；
+- 发布前必须先在两个市场创建与 `package.json` 的 `publisher`（`i18n-ally-search`）同名的发布者账号；
 - `workflow_dispatch` 手动触发只发市场不建 GitHub Release（无 tag 上下文），且未 bump 版本会被市场拒绝；
 - Azure DevOps PAT 将于 2026 年 12 月退役，届时 Marketplace 发布需迁移到 Entra ID 工作负载身份（`--azure-credential`），GitHub Actions + PAT 方案在此之前有效；
 - GitHub Releases 上的 `.vsix` 可供用户手动安装（`Extensions: Install from VSIX…`）。
